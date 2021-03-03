@@ -26,9 +26,14 @@ Reset_Handler   PROC
                 ENDP
 ; X = 20h,	Y = 05h,	Z= 04h
 ; Define Constant Data in Code Area
-X__		DCD 0x20
-Y__		DCD 0x05
-Z__		DCD	0x04	
+X_		DCD 0x04
+Y_		DCD 0x35
+Z_		DCD	0x08	
+
+A		EQU 0xBF
+B_		EQU 0x0F
+C		EQU 0x35
+D		EQU 0x31
 
 __main      	PROC
 ; load Constant of readonly data memory
@@ -38,31 +43,40 @@ __main      	PROC
 							ldr	r9,[r9]
 							ldr r10, =Z_
 							ldr	r10,[r10]
-; load Constant of code memory
-							ldr r4,  =X__
-							ldr	r0,[r4]			; r0 = X
-							ldr r4,  =Y__
-							ldr	r1,[r4]         ; r1 = Y
-							ldr r4, =Z__
-							ldr	r2,[r4]         ; r2 = Z
-; Evaluate Q = (X + Y) + (Z - Y) - (X - Y)
+							
+; Evaluate (Y + Z) + X - (Y - X) + Z = Q
 ; Without sign calculation
-							add r3, r0, r1	  	; r3 = r0+r1 = X + Y
-							sub r4, r2, r1    	; r4 = r2-r1 = Z - Y
-							sub r5, r0, r1    	; r5 = r0-r1 = X - Y
-							add r6, r3, r4    	; r6 = (X+Y)+(Z-Y)
-							sub r7, r6, r5    	; r7 = r6-(X-Y)= Q
-; Calculation with the sign
-							adds r3, r0, r1   	; r3 = r0+r1 = X + Y
-							subs r4, r2, r1   	; r4 = r2-r1 = Z - Y
-							subs r5, r0, r1   	; r5 = r0-r1 = X - Y
-							adds r6, r3, r4   	; r6 = (X+Y)+(Y-Z)
-							subs r8, r6, r5   	; r8 = r6-(X-Y) =Q
+							add r3, r9, r10	  	; r3 = r9+r10 = Y + Z
+							sub r4, r9, r8    	; r4 = r9-r8 = Y - X
+							sub r5, r3, r4    	; r5 = r3-r4 = (Y + Z) - (Y - X)
+							add r6, r5, r8    	; r6 = r5 + r8 = (Y + Z) - (Y - X) + X
+							add r7, r6, r10    	; r7 = r6 + r10 = (Y + Z) - (Y - X) + X + Z
+
+;Q = !(A and !B and C) + D and !C and B xor !(A and C and D) , де A=BFh, B=hh, C=35h, D=31h.
+							mov r2,  #A
+							mov r3,  #B_
+							mov r4,  #C
+							mov r5,  #D
+							EOR r8,  r3, #0xFFFFFFFF    ; r8 = !B
+							AND r8,  r8, r2				; r8 = !B * A
+							AND r8,  r8, r4				; r8 = !B * A * C
+							EOR r8,  r8, #0xFFFFFFFF	; r8 = !r8 = !(!B * A * C)
+							AND r9,  r2, r4				; r9 = A * C
+							AND r9,  r9, r5				; r9 = A * C * D
+							EOR r9,  r9, #0xFFFFFFFF	; r9 = !(A * C * D)
+							EOR r10, r4, #0xFFFFFFFF	; r10 = !C
+							AND r10, r10, r5			; r10 = !C * D
+							AND r10, r10, r3			; r10 = !C * D * B
+							EOR r10, r10, r9			; r10 = (!C * D * B) xor !(A * C * D)
+							ORR r10, r10, r8    		; r10 = !(!B * A * C) + (!C * D * B) xor !(A * C * D)
+							
 ; Store rezult
 							LDR r1, =Q
 							STR r7, [r1]
-							LDR r1, =Q_
-							STR r8, [r1]
+							LDR r2, =Q_
+							STR r10, [r2]
+							
+							
 
 __mainloop
          				; place you application code here
@@ -70,15 +84,9 @@ __mainloop
 
 
 		  ENDP
-; Define Constant Data in Area Readonly Data
-							AREA    |MY CONSTANT|,DATA, READONLY
-								ALIGN 4
-X_		DCD 0x20
-Y_		DCD 0x05
-Z_		DCD	0x04
 ; Area Data Read/Write
                 AREA    |MY DATA|,DATA
 								ALIGN 4
-Q			DCD	0			; Rezult 1
+Q	  DCD 0		; Rezult 1
 Q_	  DCD 0     ; Rezult 2
 		  END
