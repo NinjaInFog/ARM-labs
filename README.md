@@ -6,7 +6,7 @@
 |:-----:|:---------------------:|				
 | lab1 		   | :white_check_mark:     |
 | lab2 		   | :white_check_mark:|
-| lab3 		   | :soon:|
+| lab3 		   | :white_check_mark:|
 | lab4 		   | :soon:|
 | lab5 		   | :soon:|
 | lab6 		   | :soon:|
