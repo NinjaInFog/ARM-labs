@@ -1,4 +1,4 @@
-### My University project based on STM32F401RE
+# My University project based on STM32F401RE
 
 ## Goal: 
 
@@ -11,3 +11,5 @@ and depending on the distance value, change the angle of rotation of the servo
 - Ultrasonic Distance Sensor - HC-SR04
 - Servo - MG995
 
+## Software:
+- Keil uVision5
