@@ -9,7 +9,7 @@
 | lab3 		   | :white_check_mark:|
 | lab4 		   | :white_check_mark:|
 | lab5 		   | :white_check_mark:|
-
+| RGR		   | :soon: |
 
 ### Legend
 
